@@ -1,0 +1,4 @@
+SocksPort 9050
+DataDirectory /var/lib/tor
+Log notice stdout
+ExitPolicy reject *:*

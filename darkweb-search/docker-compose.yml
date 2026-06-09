@@ -1,0 +1,11 @@
+services:
+  darkweb-search:
+    build: .
+    container_name: darkweb-search-mcp
+    stdin_open: true
+    tty: true
+    ports:
+      - "8000:8000"
+    environment:
+      - TOR_PROXY=socks5://127.0.0.1:9050
+    restart: unless-stopped
