@@ -18,3 +18,7 @@ A collection of MCP (Model Context Protocol) servers for automation, OSINT, and 
 Each project is self-contained with its own Dockerfile / docker-compose.yml.
 
 > ⚠️ Never commit `.env` files or secrets. Use `.env.example` as a template.
+
+| `aviation-osint` | Aviation OSINT MCP server (Python) |
+| `aws-mcp` | AWS MCP server (Docker) |
+| `osint-telegram-mcp` | Telegram OSINT MCP server (TypeScript) |

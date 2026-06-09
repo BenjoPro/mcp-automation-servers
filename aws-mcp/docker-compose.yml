@@ -1,0 +1,63 @@
+﻿services:
+
+  aws-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aws-mcp
+    stdin_open: true
+    tty: false
+    restart: unless-stopped
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - AWS_PROFILE=${AWS_PROFILE:-default}
+      - GRAYHAT_API_KEY=${GRAYHAT_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - GOOGLE_CSE_ID=${GOOGLE_CSE_ID:-}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-awsmcp2024}
+      - REPORTS_DIR=/reports
+      - TOOLS_DIR=/opt/tools
+    volumes:
+      - ${USERPROFILE}/.aws:/root/.aws:ro
+      - ./reports:/reports
+      - pacu-data:/opt/tools/pacu/sessions
+    networks:
+      - mcp-net
+    depends_on:
+      neo4j:
+        condition: service_healthy
+
+  neo4j:
+    image: neo4j:5.18-community
+    container_name: aws-mcp-neo4j
+    restart: unless-stopped
+    environment:
+      - NEO4J_AUTH=neo4j/awsmcp2024
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - mcp-net
+    healthcheck:
+      test: ["CMD", "neo4j", "status"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  mcp-net:
+    driver: bridge
+
+volumes:
+  neo4j-data:
+  neo4j-logs:
+  pacu-data:
