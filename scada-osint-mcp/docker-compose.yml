@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  scada-osint-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scada-osint-mcp
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    volumes:
+      - ./output:/app/output
+      - ./logs:/app/logs
+      - ./config:/app/config
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    networks:
+      - osint-net
+
+networks:
+  osint-net:
+    driver: bridge

@@ -1,0 +1,71 @@
+﻿version: "3.9"
+
+x-tor-env: &tor-env
+  TOR_SOCKS_HOST: tor
+  TOR_SOCKS_PORT: "9050"
+  TOR_CONTROL_PORT: "9051"
+  TOR_CONTROL_PASSWORD: "${TOR_CONTROL_PASSWORD:-changeme}"
+
+services:
+
+  tor:
+    image: dperson/torproxy:latest
+    container_name: dws-tor
+    restart: unless-stopped
+    environment:
+      TOR_MaxCircuitDirtiness: "120"
+      PASSWORD: "${TOR_CONTROL_PASSWORD:-changeme}"
+    ports:
+      - "127.0.0.1:9050:9050"
+      - "127.0.0.1:9051:9051"
+    healthcheck:
+      test: ["CMD", "curl", "--socks5", "socks5h://localhost:9050",
+             "-s", "https://check.torproject.org/api/ip"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+
+  mcp:
+    build:
+      context: ./mcp
+      dockerfile: Dockerfile
+    container_name: dws-mcp
+    restart: unless-stopped
+    depends_on:
+      tor:
+        condition: service_healthy
+    environment:
+      <<: *tor-env
+      DB_PATH: /data/darkweb.db
+      MCP_MODE: sse
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    volumes:
+      - dws-data:/data
+    ports:
+      - "127.0.0.1:8765:8765"
+
+  daemon:
+    build:
+      context: ./daemon
+      dockerfile: Dockerfile
+    container_name: dws-daemon
+    restart: unless-stopped
+    profiles:
+      - daemon
+    depends_on:
+      tor:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+    environment:
+      <<: *tor-env
+      DB_PATH: /data/darkweb.db
+      MCP_MODE: sse
+      SCAN_INTERVAL_MINUTES: "${SCAN_INTERVAL_MINUTES:-60}"
+      LOG_LEVEL: "${LOG_LEVEL:-INFO}"
+    volumes:
+      - dws-data:/data
+
+volumes:
+  dws-data:
+    driver: local

@@ -1,0 +1,40 @@
+﻿version: "3.9"
+
+services:
+
+  vpn:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun-vpn
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./vpn/wg0.conf:/gluetun/wireguard/wg0.conf:ro
+    environment:
+      - VPN_SERVICE_PROVIDER=custom
+      - VPN_TYPE=wireguard
+    ports:
+      - "8888:8888"
+    restart: unless-stopped
+
+  agent-manager:
+    build: ./agent-manager
+    container_name: agent-manager
+    network_mode: "service:vpn"
+    environment:
+      - ROTATE_INTERVAL_MS=30000
+    depends_on:
+      - vpn
+    restart: unless-stopped
+
+  mcp-server:
+    build: ./mcp-server
+    container_name: mcp-server
+    network_mode: "service:vpn"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - vpn
+      - agent-manager
+    restart: unless-stopped

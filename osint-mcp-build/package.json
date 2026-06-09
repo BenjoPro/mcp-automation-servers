@@ -1,0 +1,9 @@
+﻿{
+  "name": "osint-mcp-server",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "node-fetch": "^2.7.0"
+  }
+}

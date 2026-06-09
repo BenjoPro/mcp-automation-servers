@@ -1,0 +1,5 @@
+﻿apscheduler>=3.10.0
+httpx[socks]>=0.27.0
+stem>=1.8.2
+aiosqlite>=0.20.0
+beautifulsoup4>=4.12.0

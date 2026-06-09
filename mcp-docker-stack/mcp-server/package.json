@@ -1,0 +1,9 @@
+﻿{
+  "name": "mcp-docker-server",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "axios": "^1.7.0"
+  }
+}
